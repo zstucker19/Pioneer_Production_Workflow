@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visual Production Flow</title>
+    <meta charset="UTF-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script type="text/javascript" src="../workflow.js"></script>
+</head>
+<body>
+    <div class="container">
+
+        <div class="row text-center">
+            <div class="col-lg-12">
+                <h1><strong><u>Production Departments</u></strong></h1>
+            </div>
+        </div>
+
+
+        <div class="row text-center">
+            <div class="col-lg-3" id="InnerLayers">
+                <h2><b>Inner Layers<br>Work Centers</b></h2>
+                    <div class="row text-left">
+                        <div class="col-md-12" id="InnerLayersWorkCenters">
+                            <h4>Inner Layers Photo</h4>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <ul id="InnerLayerProcesses">
+                                        <li>Inner Layers Cobra Bond (Lots: <span id="InnerLayersCobraBondLots">0</span>)</li>
+                                        <li>Inner Layers Chem Clean: (Lots: <span id="InnerLayersChemCleanLots">0</span>)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-left">
+                        <div class="col-md-12">
+                            <h4>Inner Layers Etch</h4>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <ul id="InnerLayerProcesses">
+                                        <li>Inner Layers Etch (Lots: <span id="InnerLayersEtchLots">0</span>)</li>
+                                        <li>Inner Layers Drill: (Lots: <span id="InnerLayersDrillLots">0</span>)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-left">
+                        <div class="col-md-12">
+                            <h4>Inner Layers Work Center 3</h4>
+                        </div>
+                    </div>
+                    <div class="row text-left">
+                        <div class="col-md-12">
+                            <h4>Inner Layers Work Center 4</h4>
+                        </div>
+                    </div>
+            </div>
+            <div class="col-lg-3">
+                <h2><b>Sub Lam<br>Work Centers</b></h2>
+            </div>
+            <div class="col-lg-3">
+                <h2><b>Outer Layers<br>Work Centers</b></h2>
+            </div>
+            <div class="col-lg-3">
+                <h2><b>Final Lam<br>Work Centers</b></h2>
+            </div>
+        </div>
+        
+
+        <div class="row text-center">
+            <div class="col-lg-12">
+                <button class="btn btn-primary" type="submit">Begin Moving 10,000 Lots</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <p id="lotInfo"></p>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
