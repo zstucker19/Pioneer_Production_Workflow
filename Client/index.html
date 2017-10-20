@@ -4,7 +4,6 @@
     <title>Visual Production Flow</title>
     <meta charset="UTF-8">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <script type="text/javascript" src="../workflow.js"></script>
 </head>
 <body>
     <div class="container">
@@ -18,7 +17,7 @@
 
         <div class="row text-center">
             <div class="col-lg-3" id="InnerLayers">
-                <h2><b>Inner Layers<br>Work Centers</b></h2>
+                <h2><b>Inner Layers<br><Work></Work> Centers</b></h2>
                     <div class="row text-left">
                         <div class="col-md-12" id="InnerLayersWorkCenters">
                             <h4>Inner Layers Photo</h4>
@@ -82,4 +81,279 @@
 
     </div>
 </body>
+
+
+<script>
+
+//Lots Array and Sub-Arrays based on Qualities
+let totalTimeInnerLayers = 0;
+let allLots = [];
+let allProcesses = [];
+let allWorkCenters = [];
+let allDepartments = [];
+
+//Lots Constructor
+
+let Lot = function(lotNum) {
+    //declare thisLot variable for scope purposes
+    let thisLot = this;
+    //Helper Coin-Flip Function
+    let isTrue = function() {
+        if(Math.floor(Math.random() * 2) == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    //General Information
+    this.type = 'Lot';
+    this.lotNum = lotNum;
+
+    //Randomize qualities about lots for dummy data
+    this.quantity = Math.ceil(Math.random() * 30);
+    this.boardDollarValue = Math.ceil(Math.random() * 10000);
+    this.boardDockDateDays = Math.ceil(Math.random() * 500);
+
+    //Random qualities about what processes are neccesary on lot
+    //Must change to false after completed
+    this.innerLayersDrill = {
+        name: 'Inner Layers Drill',
+        doesInnerLayersDrill: isTrue(),
+        innerLayersDrillTime: function() {
+            if(this.doesInnerLayersDrill) {
+                //Need accurate times later
+                return (thisLot.quantity * 400);
+            } else {
+                return 0;
+            }
+        }
+    };
+    //Second Process Option
+    this.etchInspect = {
+        name: 'Etch Inspect',
+        doesEtchInspect: isTrue(),
+        etchInspectTime: function() {
+            if(this.doesEtchInspect) {
+                return (thisLot.quantity * 260);
+            } else {
+                return 0;
+            }
+        }
+    };
+
+    //Third Process Option
+    this.innerLayersChemClean = {
+        name: 'Inner Layers Chem Clean',
+        doesInnerLayersChemClean: isTrue(),
+        innerLayersChemCleanTime: function() {
+            if(this.doesInnerLayersChemClean) {
+                return (thisLot.quantity * 1000);
+            } else {
+                return 0;
+            }
+        }
+
+    };
+
+    //Fourth Process Option
+    this.innerLayersCobraBond = {
+        name: 'Inner Layers Cobra Bond',
+        doesInnerLayersCobraBond: isTrue(),
+        innerLayersCobraBondTime: function() {
+            if(this.doesInnerLayersCobraBond) {
+                return (thisLot.quantity * 300);
+            } else {
+                return 0;
+            }
+        }
+    };
+
+    //Calculates the Total Time Left
+    this.innerLayersTime = (this.innerLayersDrill.innerLayersDrillTime() + this.etchInspect.etchInspectTime() + 
+    this.innerLayersChemClean.innerLayersChemCleanTime() + this.innerLayersCobraBond.innerLayersCobraBondTime());
+};
+
+
+//Process Constructor
+
+let Process = function(name, procNum, avgTime, workCenter) {
+    let thisProc = this;
+    this.name = name;
+    this.procNum = procNum;
+    //Average Time per 100 boards (or something similar)
+    this.avgTime = avgTime;
+    //Define what Work Center this Process belongs to
+    this.workCenter = workCenter;
+    this.lots = [];
+    //Goes through the lots and checks how many boards are in each lot
+    //Then multiplies that by the average time it takes each board to go through process
+    this.currentWait = function() {
+        let boardsInLot = 0;
+        if(this.lots.length > 0) {
+            for(let i = 0; i < this.lots.length; i++) {
+                boardsInLot += this.lots[i].quantity;
+            }
+        } else {
+            return 0;
+        }
+        return boardsInLot * this.avgTime;
+    };
+};
+
+//Work Center Constructor
+
+let WorkCenter = function(name, workCenterNum, department) {
+    //Defined for scope
+    let thisWorkCenter = this;
+    this.type = 'Work Center';
+    this.name = name;
+    this.workCenterNum = workCenterNum;
+    //Show what Department this is a part of
+    this.department = department;
+    //Place all Processes 
+    this.processes = [];
+};
+
+//Department Constructor
+
+let Department = function(name) {
+    //Defined for scope
+    let thisDepartment = this;
+    this.type = 'Department';
+    this.name = name;
+    //Place all Work Centers
+    this.workCenters = [];
+};
+
+
+//Use Lots Constructor to Generate 10000 Dummy Data Lots
+let generateLots = function() {
+    for(let i = 1; i <= 10000; i++) {
+        allLots.push(new Lot(i));
+    }
+}();
+
+//Use Process Constructor to Create New Processes
+let etchInspect = new Process('Etch Inspect', 103, 200, 'Inner Layers Etch');
+let innerLayersChemClean = new Process('Inner Layers Chem Clean', 104, 30, 'Inner Layers Photo');
+let innerLayersDrill = new Process('Inner Layers Drill', 111, 300, 'Inner Layers Etch');
+let innerLayersCobraBond = new Process('Inner Layers Cobra Bond', 116, 100, 'Inner Layers Photo');
+
+//Use Work Center Constructor to Create New Work Centers
+let innerLayersPhoto = new WorkCenter('Inner Layers Photo', 50, 'Inner Layers');
+let innerLayersEtch = new WorkCenter('Inner Layers Etch', 60, 'Inner Layers');
+
+//Use Department Constructor to Create New Departments
+let innerLayers = new Department('Inner Layers');
+let sub = new Department('Sub');
+
+
+
+
+//Move Lots Objects that need Etch Inspect into Queue Array
+let etchInspectLots = function() {
+    for(let i = 0; i < allLots.length; i++) {
+        if(allLots[i].etchInspect.doesEtchInspect) {
+            etchInspect.lots.push(allLots[i]);
+        }
+    }
+}();
+
+//Move Lot Objects that need Chem Clean into Lots Queue Array
+let innerLayersChemCleanLots = function() {
+    for(let i = 0; i < allLots.length; i++) {
+        if(allLots[i].innerLayersChemClean.doesInnerLayersChemClean) {
+            innerLayersChemClean.lots.push(allLots[i]);
+        }
+    }
+}();
+
+//Move Lot Objects that need Inner Layers Drilling into Lots Queue Array
+let innerLayersDrillLots = function() {
+    for(let i = 0; i < allLots.length; i++) {
+        if(allLots[i].innerLayersDrill.doesInnerLayersDrill) {
+            innerLayersDrill.lots.push(allLots[i]);
+        }
+    }
+}();
+
+//Move Lot Objects that need Cobra Bond into Lots Queue Array
+let innerLayersCobraBondLots = function() {
+    for(let i = 0; i < allLots.length; i++) {
+        if(allLots[i].innerLayersCobraBond.doesInnerLayersCobraBond) {
+            innerLayersCobraBond.lots.push(allLots[i]);
+        }
+    }
+}();
+
+
+
+//Hard Coded to push into Process Array
+allProcesses.push(etchInspect, innerLayersChemClean, innerLayersDrill, innerLayersCobraBond);
+
+
+//Move Process Objects that are part of Inner Layers Work Centers into their respective Processes Arrays (if multiple)
+let innerLayersProcs = function() {
+    for(let i = 0; i < allProcesses.length; i++) {
+        if(allProcesses[i].workCenter == 'Inner Layers Photo') {
+            innerLayersPhoto.processes.push(allProcesses[i]);
+        } else if(allProcesses[i].workCenter == 'Inner Layers Etch') {
+            innerLayersEtch.processes.push(allProcesses[i]);
+        }
+    }
+}();
+
+
+
+//Hard Coded to push into Work Center Array
+allWorkCenters.push(innerLayersPhoto, innerLayersEtch);
+
+//Move Work Centers into their respective departments
+let innerLayersWorkCenters = function() {
+    for(let i = 0; i < allWorkCenters.length; i++) {
+        if(allWorkCenters[i].department == 'Inner Layers') {
+            innerLayers.workCenters.push(allWorkCenters[i]);
+        } else if(allWorkCenters[i].department == 'Sub') {
+            sub.workCenters.push(allWorkCenters[i]);
+        }
+    }
+}();
+
+
+//Push Departments into an Array of All Departments
+allDepartments.push(innerLayers, sub);
+
+
+//Console log to check lot ID from highest available level of production
+let lotCheckID = function(lotID) {
+    for(let i = 0; i < allDepartments.length; i++) {
+        for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+            for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                for(let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
+                    if(lotID == allDepartments[i].workCenters[j].processes[k].lots[l].lotNum) {
+                        return allDepartments[i].workCenters[j].processes[k].lots[l];
+                    }
+                }
+            }
+        }
+    }
+};
+
+//Display all Lots on the DOM, 
+let addLots = function() {
+    let lots = '';
+    allLots.forEach(function(element) {
+        let newDiv = document.createElement('div');
+        newDiv.id = element.lotNum;
+        let str = "<b>Lot #" + newDiv.id + " </b>" + JSON.stringify(element);
+        document.getElementsByTagName('body')[0].appendChild(newDiv);
+        document.getElementById(newDiv.id).innerHTML = str;
+    }, this);
+}();
+
+
+
+</script>
+
 </html>
