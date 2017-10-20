@@ -4,6 +4,9 @@
     <title>Visual Production Flow</title>
     <meta charset="UTF-8">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
@@ -16,16 +19,20 @@
 
 
         <div class="row text-center">
-            <div class="col-lg-3" id="InnerLayers">
-                <h2><b>Inner Layers<br><Work></Work> Centers</b></h2>
+            <div class="col-lg-1">
+            </div>
+            <div class="col-lg-2" id="InnerLayers">
+                <h3><b>Inner Layers<br>Work Centers</b></h3>
                     <div class="row text-left">
                         <div class="col-md-12" id="InnerLayersWorkCenters">
                             <h4>Inner Layers Photo</h4>
                             <div class="row">
                                 <div class="col-md-12">
                                     <ul id="InnerLayerProcesses">
-                                        <li>Inner Layers Cobra Bond (Lots: <span id="InnerLayersCobraBondLots">0</span>)</li>
-                                        <li>Inner Layers Chem Clean: (Lots: <span id="InnerLayersChemCleanLots">0</span>)</li>
+                                        <li>Inner Layers Cobra Bond<br>(Lots: <span id="InnerLayersCobraBondLots">0</span>)
+                                        <br>(Current Wait: <span id="InnerLayersCobraBondCurrentWait"></span>)</li>
+                                        <li>Inner Layers Chem Clean:<br>(Lots: <span id="InnerLayersChemCleanLots">0</span>)
+                                        <br>(Current Wait: <span id="InnerLayersChemCleanCurrentWait"></span>)</li>
                                     </ul>
                                 </div>
                             </div>
@@ -36,9 +43,11 @@
                             <h4>Inner Layers Etch</h4>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <ul id="InnerLayerProcesses">
-                                        <li>Inner Layers Etch (Lots: <span id="InnerLayersEtchLots">0</span>)</li>
-                                        <li>Inner Layers Drill: (Lots: <span id="InnerLayersDrillLots">0</span>)</li>
+                                    <ul id="InnerLayerProcesses" class="text-left">
+                                        <li>Inner Layers Etch<br>(Lots: <span id="InnerLayersEtchLots">0</span>)
+                                        <br>(Current Wait: <span id="InnerLayersEtchCurrentWait"></span>)</li>
+                                        <li>Inner Layers Drill:<br>(Lots: <span id="InnerLayersDrillLots">0</span>)
+                                        <br>(Current Wait: <span id="InnerLayersDrillCurrentWait"></span>)</li>
                                     </ul>
                                 </div>
                             </div>
@@ -55,29 +64,35 @@
                         </div>
                     </div>
             </div>
-            <div class="col-lg-3">
-                <h2><b>Sub Lam<br>Work Centers</b></h2>
+            <div class="col-lg-2">
+                <h3><b>Sub Lam<br>Work Centers</b></h3>
             </div>
-            <div class="col-lg-3">
-                <h2><b>Outer Layers<br>Work Centers</b></h2>
+            <div class="col-lg-2">
+                <h3><b>Final Lam<br>Work Centers</b></h3>
             </div>
-            <div class="col-lg-3">
-                <h2><b>Final Lam<br>Work Centers</b></h2>
+            <div class="col-lg-2">
+                <h3><b>Outer Layers<br>Work Centers</b></h3>
+            </div>
+            <div class="col-lg-2">
+                <h3><b>Final<br>Work Centers</b></h3>
             </div>
         </div>
         
 
         <div class="row text-center">
             <div class="col-lg-12">
-                <button class="btn btn-primary" type="submit">Begin Moving 10,000 Lots</button>
+                <button class="btn btn-primary" type="submit" id="show_processes_needed" style="display: inline">Show Processes Needed</button>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-sm-12">
-                <p id="lotInfo"></p>
+
+        <div class="row text-center">
+            <div class="col-lg-12">
+                <button class="btn btn-danger" type="submit" id="push_into_processes" style="display:none;" >Push Lots Into Processes</button>
             </div>
         </div>
+
+        <br>
 
     </div>
 </body>
@@ -229,7 +244,7 @@ let Department = function(name) {
 
 //Use Lots Constructor to Generate 10000 Dummy Data Lots
 let generateLots = function() {
-    for(let i = 1; i <= 10000; i++) {
+    for(let i = 1; i <= 1000; i++) {
         allLots.push(new Lot(i));
     }
 }();
@@ -340,7 +355,7 @@ let lotCheckID = function(lotID) {
     }
 };
 
-//Display all Lots on the DOM, 
+//Display all Lots on the DOM
 let addLots = function() {
     let lots = '';
     allLots.forEach(function(element) {
@@ -351,6 +366,41 @@ let addLots = function() {
         document.getElementById(newDiv.id).innerHTML = str;
     }, this);
 }();
+
+
+ //Display Processes Required Counter Next to number
+$("#show_processes_needed").on("click", function() {
+    $("#show_processes_needed").hide();
+    $("#push_into_processes").show();
+    //Iterate through to Search for How Many Lots for each Process
+    for(let i = 0; i < allDepartments.length; i++) {
+        for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+            for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                if(allDepartments[i].workCenters[j].processes[k].name == 'Etch Inspect') {
+                    $('#InnerLayersEtchLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
+                    $('#InnerLayersEtchCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
+                }
+                if(allDepartments[i].workCenters[j].processes[k].name == 'Inner Layers Drill') {
+                    $('#InnerLayersDrillLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
+                    $('#InnerLayersDrillCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
+                }
+                if(allDepartments[i].workCenters[j].processes[k].name == 'Inner Layers Chem Clean') {
+                    $('#InnerLayersChemCleanLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
+                    $('#InnerLayersChemCleanCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
+                }
+                if(allDepartments[i].workCenters[j].processes[k].name == 'Inner Layers Cobra Bond') {
+                    $('#InnerLayersCobraBondLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
+                    $('#InnerLayersCobraBondCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
+                }                
+            }
+        }
+    }    
+});
+
+$("#push_into_processes").on('click', function() {
+    alert("Not Finished");
+});
+
 
 
 
