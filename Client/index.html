@@ -125,7 +125,7 @@ let Process = function(name, processID, avgTime, workCenterID) {
         } else {
             return 0;
         }
-        return boardsInLot * this.avgTime;
+        return boardsInLot * thisProc.avgTime;
     };
     //Push all processes on creation
     allProcesses.push(this);
@@ -616,7 +616,7 @@ let renderWorkCenters = function() {
 let renderProcesses = function() {
     allProcesses.forEach(function(element, index) {
         let processName = element.name;
-        let processHead = $("<div class=row><div class=col-md-12 id=process"+ element.processID +"><p>" + processName + "<p></div></div>");
+        let processHead = $("<div class=row><div class=col-md-12 id=process"+ element.processID +"><h5>" + processName + "\nCurrent Wait: " + element.currentWait() + "<h5></div></div>");
         $("#workcenter" + element.workCenterID).append(processHead);
     }, this);
 }();
