@@ -18,65 +18,7 @@
         </div>
 
 
-        <div class="row text-center">
-            <div class="col-lg-1">
-            </div>
-            <div class="col-lg-2" id="InnerLayers">
-                <h3><b>Inner Layers<br>Work Centers</b></h3>
-                    <div class="row text-left">
-                        <div class="col-md-12" id="InnerLayersWorkCenters">
-                            <h4>Inner Layers Photo</h4>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <ul id="InnerLayerProcesses">
-                                        <li>Inner Layers Cobra Bond<br>(Lots: <span id="InnerLayersCobraBondLots">0</span>)
-                                        <br>(Current Wait: <span id="InnerLayersCobraBondCurrentWait"></span>)</li>
-                                        <li>Inner Layers Chem Clean:<br>(Lots: <span id="InnerLayersChemCleanLots">0</span>)
-                                        <br>(Current Wait: <span id="InnerLayersChemCleanCurrentWait"></span>)</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row text-left">
-                        <div class="col-md-12">
-                            <h4>Inner Layers Etch</h4>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <ul id="InnerLayerProcesses" class="text-left">
-                                        <li>Inner Layers Etch<br>(Lots: <span id="InnerLayersEtchLots">0</span>)
-                                        <br>(Current Wait: <span id="InnerLayersEtchCurrentWait"></span>)</li>
-                                        <li>Inner Layers Drill:<br>(Lots: <span id="InnerLayersDrillLots">0</span>)
-                                        <br>(Current Wait: <span id="InnerLayersDrillCurrentWait"></span>)</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row text-left">
-                        <div class="col-md-12">
-                            <h4>Inner Layers Work Center 3</h4>
-                        </div>
-                    </div>
-                    <div class="row text-left">
-                        <div class="col-md-12">
-                            <h4>Inner Layers Work Center 4</h4>
-                        </div>
-                    </div>
-            </div>
-            <div class="col-lg-2">
-                <h3><b>Sub Lam<br>Work Centers</b></h3>
-            </div>
-            <div class="col-lg-2">
-                <h3><b>Final Lam<br>Work Centers</b></h3>
-            </div>
-            <div class="col-lg-2">
-                <h3><b>Outer Layers<br>Work Centers</b></h3>
-            </div>
-            <div class="col-lg-2">
-                <h3><b>Final<br>Work Centers</b></h3>
-            </div>
-        </div>
+        <div class="row text-center" id="production"></div>
         
 
         <div class="row text-center">
@@ -132,20 +74,6 @@ let Lot = function(lotNum) {
     this.boardDollarValue = Math.ceil(Math.random() * 10000);
     this.boardDockDateDays = Math.ceil(Math.random() * 500);
 
-    //Random qualities about what processes are neccesary on lot
-    //Must change to false after completed
-    this.innerLayersDrill = {
-        name: 'Inner Layers Drill',
-        doesInnerLayersDrill: isTrue(),
-        innerLayersDrillTime: function() {
-            if(this.doesInnerLayersDrill) {
-                //Need accurate times later
-                return (thisLot.quantity * 400);
-            } else {
-                return 0;
-            }
-        }
-    };
 
     this.processesNeeded = [];
     this.processesCompleted = [];
@@ -640,10 +568,10 @@ let sub = new Department('Sub', 065);
 let outerLayers = new Department('Outer Layers', 100);
 let finalLam = new Department('Final Lam', 070);
 let final = new Department('Final', 130);
-let engineering = new Department('Engineering', 10);
-let consignment = new Department('Consignment', 135);
+//let engineering = new Department('Engineering', 10);
+//let consignment = new Department('Consignment', 135);
 let assembly = new Department('Assembly', 800);
-let design = new Department('Design', 001)
+//let design = new Department('Design', 001)
 
 
 
@@ -667,17 +595,45 @@ let lotCheckID = function(lotID) {
 console.log(lotCheckID(3));
 
 
-// Display all Lots on the DOM
-let addLots = function() {
-    let lots = '';
-    allDepartments.forEach(function(element) {
-        let newDiv = document.createElement('div');
-        newDiv.id = element.lotNum;
-        let str = JSON.stringify(element);
-        document.getElementsByTagName('body')[0].appendChild(newDiv);
-        document.getElementById(newDiv.id).innerHTML = str;
+//Render the DOM through JQuery
+let renderDepartments = function() {
+    allDepartments.forEach(function(element, index) {
+        let departmentName = element.name;
+        let departHead = $("<div class=col-lg-2 id=department"+ element.departmentID +"><h3><b><u>"+ departmentName +"</u></b></h3></div>");
+        $("#production").append(departHead);
     }, this);
 }();
+
+
+let renderWorkCenters = function() {
+    allWorkCenters.forEach(function(element, index) {
+        let workCenterName = element.name;
+        let workCenterHead = $("<div class=row><div class=col-md-12 id=workcenter"+ element.workCenterID +"><h4><b>" + workCenterName + "</b></h4></div></div>");
+        $("#department" + element.departmentID).append(workCenterHead);
+    }, this);
+}();
+
+let renderProcesses = function() {
+    allProcesses.forEach(function(element, index) {
+        let processName = element.name;
+        let processHead = $("<div class=row><div class=col-md-12 id=process"+ element.processID +"><p>" + processName + "<p></div></div>");
+        $("#workcenter" + element.workCenterID).append(processHead);
+    }, this);
+}();
+
+
+
+// Display all Lots on the DOM
+// let addLots = function() {
+//     let lots = '';
+//     allDepartments.forEach(function(element) {
+//         let newDiv = document.createElement('div');
+//         newDiv.id = element.lotNum;
+//         let str = JSON.stringify(element);
+//         document.getElementsByTagName('body')[0].appendChild(newDiv);
+//         document.getElementById(newDiv.id).innerHTML = str;
+//     }, this);
+// }();
 
 
  //Display Processes Required Counter Next to number
