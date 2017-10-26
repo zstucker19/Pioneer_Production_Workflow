@@ -17,24 +17,35 @@
             </div>
         </div>
 
+        <div class="row text-center">
+            <div class="col-md-5">
+                <div class="form-group">
+                    <label for="search">Search by Lot ID: </label>
+                    <input type="text" class="form-control" id="search">
+                </div>
+            <br>
+                <button class="btn btn-primary" type="submit" id="lot_search">Search By Lot ID</button>
+            </div>
+
+            <div class="col-md-2">
+                <h2>Clear Lot Information</h2>
+            <br>
+                <button class="btn btn-warning" type="submit" id="clear">Clear</button>
+            </div>
+
+            <div class="col-md-5">
+                    <h2>Total Time Elapsed: </h2>
+            <br>
+                <button class="btn btn-danger" type="submit" id="lot_sort">Begin Sorting Lots</button>
+            </div>
+        </div>
+
+        <div class="row text-center">
+            <div class="col-md-12" id="lot_id_searched"></div>
+
+        </div>
 
         <div class="row text-center" id="production"></div>
-        
-
-        <div class="row text-center">
-            <div class="col-lg-12">
-                <button class="btn btn-primary" type="submit" id="show_processes_needed" style="display: inline">Show Processes Needed</button>
-            </div>
-        </div>
-
-
-        <div class="row text-center">
-            <div class="col-lg-12">
-                <button class="btn btn-danger" type="submit" id="push_into_processes" style="display:none;" >Push Lots Into Processes</button>
-            </div>
-        </div>
-
-        <br>
 
     </div>
 </body>
@@ -71,10 +82,11 @@ let Lot = function(lotNum) {
 
     //Randomize qualities about lots for dummy data
     this.quantity = Math.ceil(Math.random() * 30);
-    this.boardDollarValue = Math.ceil(Math.random() * 10000);
+    this.boardDollarValue = Math.ceil((Math.random() * 10000) * thisLot.quantity);
     this.boardDockDateDays = Math.ceil(Math.random() * 500);
 
 
+    //Will be used to see which processes it needs
     this.processesNeeded = [];
     this.processesCompleted = [];
 
@@ -87,6 +99,8 @@ let Lot = function(lotNum) {
         }
     }();
 
+    //Used to determine the Process Number that it is waiting for/ undergoing
+    this.currentProcess = 0;
 };
 
 
@@ -199,7 +213,7 @@ let waitingForPackSlip = new Process('Waiting For Pack Slip', 997, 0, 997);
 let waitingForSub = new Process('Waiting for Sub', 998, 0, 074);
 let complete = new Process('Complete', 999, 0, 997);
 let travelerNotCompleted = new Process('Traveler Not Completed', 996, 0, 010);
-let combinedOrderProc = new Process('Combined Order', 10, 199);
+let combinedOrderProc = new Process('Combined Order', 10, 0, 199);
 let waitingForMATL = new Process('Waiting For Material', 11, 0, 030);
 let assyBacklog = new Process('Assembly Backlog', 12, 0, 801);
 let issueLaminate = new Process('Issue Laminate', 20, 0, 030);
@@ -810,7 +824,7 @@ let laminationDieCut = new WorkCenter('Lamination Die Cut', 073, 070);
 let subKitting = new WorkCenter('Sub Kitting', 064, 065);
 let subLamination = new WorkCenter('Sub Lamination', 065, 065);
 let taping = new WorkCenter('Taping', 083, 065);
-let drill = new WorkCenter('Drill', 083, 065);
+let drill = new WorkCenter('Drill', 081, 065);
 let electroless = new WorkCenter('Electroless', 084, 065);
 let copperPlate = new WorkCenter('Copper Plate', 092, 065);
 let wetProcess = new WorkCenter('Wet Process', 090, 065);
@@ -828,7 +842,7 @@ let inProcInspPhoto = new WorkCenter('In Process Inspection Photo', 086, 100);
 let oLEtch = new WorkCenter('O/L Etch', 093, 100);
 let outsideService = new WorkCenter('Outside Service', 088, 100);
 let soldermask = new WorkCenter('Soldermask', 094, 100);
-let finalCoverCoat = new WorkCenter('Final Covercoat', 076, 070);
+let finalCoverCoat = new WorkCenter('Final Covercoat', 097, 070);
 let solderLevelFuse = new WorkCenter('Solder Level/ Fuse', 095, 100);
 let xSection = new WorkCenter('X-Section', 129, 130);
 let inspection = new WorkCenter('Inspection', 105, 130);
@@ -881,7 +895,7 @@ let lotCheckID = function(lotID) {
     }
 };
 
-console.log(lotCheckID(3));
+
 
 
 //Render the DOM through JQuery
@@ -911,54 +925,42 @@ let renderProcesses = function() {
 }();
 
 
+//Function to search for a specific Lot
+$("#lot_search").on('click', function() {
+    $("#processes_needed").html('');
+    let lotsearch = $("#search").val();
+    let result = lotCheckID(lotsearch);
 
-// Display all Lots on the DOM
-// let addLots = function() {
-//     let lots = '';
-//     allDepartments.forEach(function(element) {
-//         let newDiv = document.createElement('div');
-//         newDiv.id = element.lotNum;
-//         let str = JSON.stringify(element);
-//         document.getElementsByTagName('body')[0].appendChild(newDiv);
-//         document.getElementById(newDiv.id).innerHTML = str;
-//     }, this);
-// }();
-
-
- //Display Processes Required Counter Next to number
-$("#show_processes_needed").on("click", function() {
-    $("#show_processes_needed").hide();
-    $("#push_into_processes").show();
-    //Iterate through to Search for How Many Lots for each Process
-    for(let i = 0; i < allDepartments.length; i++) {
-        for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
-            for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
-                if(allDepartments[i].workCenters[j].processes[k].name == 'Etch Inspect') {
-                    $('#InnerLayersEtchLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
-                    $('#InnerLayersEtchCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
+    let displayProcesses = function(arr) {
+        let processName = '';
+        arr.forEach(function(element, index) {
+            for(let i = 0; i < allProcesses.length; i++) {
+                if(allProcesses[i].processID == element) {
+                     processName = allProcesses[i].name;
+                     return $("#processes_needed").append("<h6>" + processName + "</h6>");
                 }
-                if(allDepartments[i].workCenters[j].processes[k].name == 'Inner Layers Drill') {
-                    $('#InnerLayersDrillLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
-                    $('#InnerLayersDrillCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
-                }
-                if(allDepartments[i].workCenters[j].processes[k].name == 'Inner Layers Chem Clean') {
-                    $('#InnerLayersChemCleanLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
-                    $('#InnerLayersChemCleanCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
-                }
-                if(allDepartments[i].workCenters[j].processes[k].name == 'Inner Layers Cobra Bond') {
-                    $('#InnerLayersCobraBondLots').html(allDepartments[i].workCenters[j].processes[k].lots.length);
-                    $('#InnerLayersCobraBondCurrentWait').html(allDepartments[i].workCenters[j].processes[k].currentWait());
-                }                
             }
-        }
-    }    
+        });
+    };
+
+    $("#lot_id_searched").html(
+        "<h2>Lot ID: " + result.lotNum + "</h2><br>" +
+        "<h4>Lot Quantity: " + result.quantity + "</h4><br>" +
+        "<h4>Value: $" + result.boardDollarValue + "</h4><br>" +
+        "<h4>Remaining Days: " + result.boardDockDateDays + "</h4><br>" +
+        "<h4 id='processes_needed'>Processes Needed: </h4>"
+    );
+
+    displayProcesses(result.processesNeeded);
 });
 
-$("#push_into_processes").on('click', function() {
-    alert("Not Finished");
+//Clear Button
+$("#clear").on('click', function() {
+    $("#lot_id_searched").html('');
 });
 
 
+//
 
 
 </script>
