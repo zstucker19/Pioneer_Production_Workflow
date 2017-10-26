@@ -53,8 +53,6 @@
 
 <script>
 
-//Testing Variables
-let count = 0;
 
 //Lots, Processes, Work Centers, and Departments Arrays 
 let allLots = [];
@@ -75,6 +73,7 @@ let Lot = function(lotNum) {
             return false;
         }
     };
+
 
     //General Information
     this.type = 'Lot';
@@ -99,8 +98,33 @@ let Lot = function(lotNum) {
         }
     }();
 
+    //Need to sort into Departmental Sub-Arrays
+    this.innerLayersProcessArray = [];
+    this.subArray = [];
+    this.outerLayersArray = [];
+    this.finalLamArray = [];
+    this.finalArray = [];
+    this.assemblyArray = [];
+
     //Used to determine the Process Number that it is waiting for/ undergoing
     this.currentProcess = 0;
+
+    this.currentDepartment = function() {
+        if(thisLot.innerLayerProcessArray.length > 0) {
+            return 'Inner Layers';
+        } else if(thisLot.subArray.length > 0) {
+            return 'Sub';
+        } else if(thisLot.outerLayersArray.length > 0) {
+            return 'Outer Layers Array';
+        } else if(thisLot.finalLamArray.length > 0) {
+            return 'Final Lam';
+        } else if(thisLot.finalArray.length > 0) {
+            return 'Final';
+        } else {
+            return 'Completed';
+        }
+    };
+
 };
 
 
@@ -115,11 +139,13 @@ let Process = function(name, processID, avgTime, workCenterID) {
     this.avgTime = avgTime;
     //Define what Work Center this Process belongs to
     this.workCenterID = workCenterID;
+    //All lots that will require this process
     this.lots = [];
+
+    //Searches for all Lots that need this process
     this.findLots = function() {
         for(let i = 0; i < allLots.length; i++) {
             for(let j = 0; j < allLots[i].processesNeeded.length; j++) {
-                count++;
                 if(thisProc.processID == allLots[i].processesNeeded[j]) {
                     if(!thisProc.lots.includes(allLots[i].processesNeeded[j])) {
                         thisProc.lots.push(allLots[i]);
@@ -128,13 +154,15 @@ let Process = function(name, processID, avgTime, workCenterID) {
             }
         }
     }();
+    //which lots are currently at this process 
+    this.currentLots = [];
     //Goes through the lots and checks how many boards are in each lot
     //Then multiplies that by the average time it takes each board to go through process
     this.currentWait = function() {
         let boardsInLot = 0;
-        if(this.lots.length > 0) {
-            for(let i = 0; i < this.lots.length; i++) {
-                boardsInLot += this.lots[i].quantity;
+        if(this.currentLots.length > 0) {
+            for(let i = 0; i < this.currentLots.length; i++) {
+                boardsInLot += this.currentLots[i].quantity;
             }
         } else {
             return 0;
@@ -192,6 +220,7 @@ let Department = function(name, departmentID) {
     //Push all Departments into Array on Creation
     allDepartments.push(this);
 };
+
 
 
 //Use Lots Constructor to Generate 10000 Dummy Data Lots
@@ -933,10 +962,12 @@ $("#lot_search").on('click', function() {
 
     let displayProcesses = function(arr) {
         let processName = '';
+        let processNum = 0;
         arr.forEach(function(element, index) {
             for(let i = 0; i < allProcesses.length; i++) {
                 if(allProcesses[i].processID == element) {
                      processName = allProcesses[i].name;
+                     processNum = allProcesses[i].processID;
                      return $("#processes_needed").append("<h6>" + processName + "</h6>");
                 }
             }
@@ -960,8 +991,25 @@ $("#clear").on('click', function() {
 });
 
 
-//
 
+// //Tracking Changes
+// let whichDepartment = function() {
+//     let currentDepartment;
+//     for(let i = 0; i < allDepartments.length; i++) {
+//         for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+//             for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+//                 for(let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
+//                     for(let m = 0; m <allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded.length; m++) {
+//                         if(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m] == allDepartments[i].workCenters[j].processes[k].processID) {
+//                             return allDepartments[i];
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// };
+console.log(allDepartments);
 
 </script>
 
