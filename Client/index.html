@@ -60,13 +60,6 @@ let allProcesses = [];
 let allWorkCenters = [];
 let allDepartments = [];
 
-this.innerLayersArray = [];
-this.subArray = [];
-this.outerLayersArray = [];
-this.finalLamArray = [];
-this.finalArray = [];
-this.assemblyArray = [];
-
 //Lots Constructor
 
 let Lot = function(lotNum) {
@@ -106,16 +99,17 @@ let Lot = function(lotNum) {
     }();
 
     //Need to sort into Departmental Sub-Arrays
-    this.innerLayersProcessArray = innerLayersArray;
-    this.subProcessArray = subArray;
-    this.outerLayersProcessArray = outerLayersArray;
-    this.finalLamProcessArray = finalLamArray;
-    this.finalProcessArray = finalArray;
-    this.assemblyProcessArray = assemblyArray;
+    this.innerLayersProcessArray = [];
+    this.subProcessArray = [];
+    this.outerLayersProcessArray = [];
+    this.finalLamProcessArray = [];
+    this.finalProcessArray = [];
+    this.assemblyProcessArray = [];
 
     //Used to determine the Process Number that it is waiting for/ undergoing
     this.currentProcess = 0;
 
+    //Fix this method later
     this.currentDepartment = function() {
         if(thisLot.innerLayersProcessArray.length > 0) {
             return 'Inner Layers';
@@ -132,7 +126,7 @@ let Lot = function(lotNum) {
         } else {
             return 'Completed';
         }
-    }();
+    };
 
     
 
@@ -242,21 +236,22 @@ let whichDepartment = function() {
                 for(let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
                     for(let m = 0; m <allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded.length; m++) {
                         if(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m] == allDepartments[i].workCenters[j].processes[k].processID) {
-                            if(allDepartments[i].departmentID == 40 && !innerLayersArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
-                                innerLayersArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
-                            } else if(allDepartments[i].departmentID == 53 && !subArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
-                                subArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
-                            } else if(allDepartments[i].departmentID == 100 && !outerLayersArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
-                                outerLayersArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
-                            } else if(allDepartments[i].departmentID == 56 && !finalLamArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
-                                finalLamArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
-                            } else if(allDepartments[i].departmentID == 130 && !finalArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
-                                finalArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
-                            } else if(allDepartments[i].departmentID == 800 && !assemblyArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
-                                assemblyArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            if(allDepartments[i].departmentID == 40 && !allDepartments[i].workCenters[j].processes[k].lots[l].innerLayersProcessArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].innerLayersProcessArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 53 && !allDepartments[i].workCenters[j].processes[k].lots[l].subProcessArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].subProcessArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 100 && !allDepartments[i].workCenters[j].processes[k].lots[l].outerLayersProcessArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].outerLayersProcessArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 56 && !allDepartments[i].workCenters[j].processes[k].lots[l].finalLamProcessArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].finalLamProcessArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 130 && !allDepartments[i].workCenters[j].processes[k].lots[l].finalProcessArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].finalProcessArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 800 && !allDepartments[i].workCenters[j].processes[k].lots[l].assemblyProcessArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].assemblyProcessArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
                             }
                         }
                     }
+                    allDepartments[i].workCenters[j].processes[k].lots[l].currentDepartment(); 
                 }
             }
         }
@@ -284,7 +279,7 @@ let waitingForSub = new Process('Waiting for Sub', 998, 0, 074);
 let complete = new Process('Complete', 999, 0, 997);
 let travelerNotCompleted = new Process('Traveler Not Completed', 996, 0, 010);
 let combinedOrderProc = new Process('Combined Order', 10, 0, 199);
-let waitingForMATL = new Process('Waiting For Material', 11, 0, 030);
+let waitingForMATL = new Process('Waiting For Material', 11, 10, 030);
 let assyBacklog = new Process('Assembly Backlog', 12, 0, 801);
 let issueLaminate = new Process('Issue Laminate', 20, 0, 030);
 let issueAcrylicAdhesive = new Process('Issue Acrylic Adhesive', 22, 0, 074);
@@ -1031,10 +1026,39 @@ $("#clear").on('click', function() {
     $("#lot_id_searched").html('');
 });
 
-
+//Invoke which department after having it defined above, giving the lots constructor access to it
+//But invoked after the processes have been assigned
 whichDepartment();
 
-console.log(allDepartments);
+//Try to invoke method on lot after sub arrays have been sorted
+let lotSorting = $("#lot_sort").on('click', function() {
+    //Temporary Variable to Track which process has the shortest wait
+    let shortestWait = allDepartments[0].workCenters[0].processes[0];
+    let mostValue = allDepartments[0].workCenters[0].processes[0].lots[0];
+    for(let i = 0; i < allDepartments.length; i++) {
+        for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+            for(let k = 1; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                //Change the shortest wait if the next process has a shorter wait
+                if(allDepartments[i].workCenters[j].processes[k-1].currentWait() < allDepartments[i].workCenters[j].processes[k].currentWait()) {
+                    shortestWait = allDepartments[i].workCenters[j].processes[k-1];
+                }
+                //console.log(shortestWait);
+            }
+            //Take the shortest wait Process and push a lot into it's current lots
+            for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                for(let l = 1; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
+                    if((allDepartments[i].workCenters[j].processes[k].lots[l-1].boardDollarValue/allDepartments[i].workCenters[j].processes[k].lots[l-1].boardDockDateDays) < (allDepartments[i].workCenters[j].processes[k].lots[l].boardDollarValue/allDepartments[i].workCenters[j].processes[k].lots[l].boardDockDateDays)) {
+                        mostValue = allDepartments[i].workCenters[j].processes[k].lots[l-1];
+                    }
+                }
+                console.log(mostValue);
+            }
+        }
+    }
+});
+
+//Check the console for the array of Objects to search
+
 
 </script>
 
