@@ -29,12 +29,12 @@
 
             <div class="col-md-2">
                 <h2>Clear Lot Information</h2>
-            <br>
+            
                 <button class="btn btn-warning" type="submit" id="clear">Clear</button>
             </div>
 
             <div class="col-md-5">
-                    <h2>Total Time Elapsed: </h2>
+                    <h2>Total Time Elapsed: <span id="running_timer">0</span></h2>
             <br>
                 <button class="btn btn-danger" type="submit" id="lot_sort">Begin Sorting Lots</button>
             </div>
@@ -59,6 +59,13 @@ let allLots = [];
 let allProcesses = [];
 let allWorkCenters = [];
 let allDepartments = [];
+
+this.innerLayersArray = [];
+this.subArray = [];
+this.outerLayersArray = [];
+this.finalLamArray = [];
+this.finalArray = [];
+this.assemblyArray = [];
 
 //Lots Constructor
 
@@ -99,31 +106,35 @@ let Lot = function(lotNum) {
     }();
 
     //Need to sort into Departmental Sub-Arrays
-    this.innerLayersProcessArray = [];
-    this.subArray = [];
-    this.outerLayersArray = [];
-    this.finalLamArray = [];
-    this.finalArray = [];
-    this.assemblyArray = [];
+    this.innerLayersProcessArray = innerLayersArray;
+    this.subProcessArray = subArray;
+    this.outerLayersProcessArray = outerLayersArray;
+    this.finalLamProcessArray = finalLamArray;
+    this.finalProcessArray = finalArray;
+    this.assemblyProcessArray = assemblyArray;
 
     //Used to determine the Process Number that it is waiting for/ undergoing
     this.currentProcess = 0;
 
     this.currentDepartment = function() {
-        if(thisLot.innerLayerProcessArray.length > 0) {
+        if(thisLot.innerLayersProcessArray.length > 0) {
             return 'Inner Layers';
-        } else if(thisLot.subArray.length > 0) {
+        } else if(thisLot.subProcessArray.length > 0) {
             return 'Sub';
-        } else if(thisLot.outerLayersArray.length > 0) {
+        } else if(thisLot.outerLayersProcessArray.length > 0) {
             return 'Outer Layers Array';
-        } else if(thisLot.finalLamArray.length > 0) {
+        } else if(thisLot.finalLamProcessArray.length > 0) {
             return 'Final Lam';
-        } else if(thisLot.finalArray.length > 0) {
+        } else if(thisLot.finalProcessArray.length > 0) {
             return 'Final';
+        } else if(thisLot.assemblyProcessArray.length > 0) { 
+            return 'Assembly';
         } else {
             return 'Completed';
         }
-    };
+    }();
+
+    
 
 };
 
@@ -221,6 +232,36 @@ let Department = function(name, departmentID) {
     allDepartments.push(this);
 };
 
+
+//Tracking Changes
+let whichDepartment = function() {
+    let currentDepartment;
+    for(let i = 0; i < allDepartments.length; i++) {
+        for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+            for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                for(let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
+                    for(let m = 0; m <allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded.length; m++) {
+                        if(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m] == allDepartments[i].workCenters[j].processes[k].processID) {
+                            if(allDepartments[i].departmentID == 40 && !innerLayersArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                innerLayersArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 53 && !subArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                subArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 100 && !outerLayersArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                outerLayersArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 56 && !finalLamArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                finalLamArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 130 && !finalArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                finalArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            } else if(allDepartments[i].departmentID == 800 && !assemblyArray.includes(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m])) {
+                                assemblyArray.push(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
 
 
 //Use Lots Constructor to Generate 10000 Dummy Data Lots
@@ -991,24 +1032,8 @@ $("#clear").on('click', function() {
 });
 
 
+whichDepartment();
 
-// //Tracking Changes
-// let whichDepartment = function() {
-//     let currentDepartment;
-//     for(let i = 0; i < allDepartments.length; i++) {
-//         for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
-//             for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
-//                 for(let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
-//                     for(let m = 0; m <allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded.length; m++) {
-//                         if(allDepartments[i].workCenters[j].processes[k].lots[l].processesNeeded[m] == allDepartments[i].workCenters[j].processes[k].processID) {
-//                             return allDepartments[i];
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// };
 console.log(allDepartments);
 
 </script>
