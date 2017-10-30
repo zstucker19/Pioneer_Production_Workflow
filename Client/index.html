@@ -52,9 +52,10 @@
 
 
 <script>
+//Count movement
+let count = 0;
 
-
-//Lots, Processes, Work Centers, and Departments Arrays 
+//Lots, Processes, Work Centers, and Departments Arrays
 let allLots = [];
 let allProcesses = [];
 let allWorkCenters = [];
@@ -263,15 +264,12 @@ let whichDepartment = function() {
 
 //Use Lots Constructor to Generate 10000 Dummy Data Lots
 let generateLots = function() {
-    for(let i = 0; i <= 5000; i++) {
+    for(let i = 0; i <= 1000; i++) {
         allLots.push(new Lot(i));
         allLots[0].processesNeeded.push(i);
     }
     allLots[0].boardDollarValue = 0;
 }();
-
-
-console.log(allLots[0]);
 
 
 //Use Process Constructor to Create New Processes
@@ -330,7 +328,7 @@ let engPlanning = new Process('Engineering Planning', 16, 0, 010);
 let iLEtch1 = new Process('I/L Etch 1', 64, 0, 060);
 let iLStripResist1 = new Process('I/L Strip Resist 1', 66, 0, 060);
 let iLEtchInspect1 = new Process('I/L Etch Inspect 1', 68, 0, 060);
-let iLChemClean2 = new Process('I/L Chem Clean 2', 070, 0, 050);
+let iLChemClean2 = new Process('I/L Chem Clean 2', 70, 0, 050);
 let iLResistCoat2 = new Process('I/L Resist Coat 2', 72, 0, 050);
 let iLImageFA2 = new Process('I/L Image F/A 2', 74, 0, 050);
 let iLImageNiGold = new Process('I/L Image - Ni/Gold', 76, 0, 050);
@@ -436,7 +434,7 @@ let subReturnToKitting = new Process('Sub Return to Kitting', 360, 0, 065);
 let issueKittedSets = new Process('Issue Kitted Sets', 400, 0, 074);
 let laminationFA = new Process('Lamination F/A', 402, 0, 077);
 let lamination = new Process('Lamination', 404, 0, 076);
-let laminationPostBake = new Process('Lamination Post Bake', 0, 070);
+let laminationPostBake = new Process('Lamination Post Bake', 406, 0, 070);
 let xSectionLamination = new Process('X-Section - Lamination', 408, 0, 074);
 let stampAWNumOnPanel = new Process('Stamp A/W # on Panel', 410, 0, 077);
 let tapeFlexAreas = new Process('Tape - Flex Areas', 412, 0, 083);
@@ -1001,7 +999,8 @@ let displayWait = function() {
     allProcesses.forEach(function(element, index) {
         let processTime = element.currentWait();
         $("#current_wait" + element.processID).html(processTime);
-    }, this);    
+    }, this);
+    $("#running_timer").html(count);   
 };
 
 
@@ -1065,6 +1064,9 @@ let findMostValuableLot = function() {
     let mostValue = allDepartments[0].workCenters[0].processes[0].lots[0];
     let shortestWait = findShortestWait();
 
+    if(mostValue == undefined) {
+        return true;
+    }    
     
     for(let l = 1; l < shortestWait.lots.length; l++) {
         if(!shortestWait.lots[l].lotInUse) {
@@ -1079,50 +1081,72 @@ let findMostValuableLot = function() {
     if(mostValue == allDepartments[0].workCenters[0].processes[0].lots[0]) {
         return true;
     }
-
     return mostValue;
-}
+};
 
-
-
+//Increase Count
+let increaseCount = function() {
+    for(let i = 0; i < allDepartments.length; i++) {
+        for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+            for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                if(allDepartments[i].workCenters[j].processes[k].currentLots.length > 0) {
+                    count += (allDepartments[i].workCenters[j].processes[k].currentLots[0].quantity * allDepartments[i].workCenters[j].processes[k].avgTime);
+                    //Needs work here
+                    let index = allDepartments[i].workCenters[j].processes[k].lots.indexOf(allDepartments[i].workCenters[j].processes[k].currentLots[0]);
+                    if(index >= 0) {
+                        allDepartments[i].workCenters[j].processes[k].lots[index].lotInUse = false;
+                        console.log(allDepartments[i].workCenters[j].processes[k].lots.length);
+                        allDepartments[i].workCenters[j].processes[k].lots.splice(index, 1);
+                        console.log(allDepartments[i].workCenters[j].processes[k].lots.length);
+                    } else {
+                        return true;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+    }
+};
 
 //Try to invoke method on lot after sub arrays have been sorted
-let lotSorting =  function() {
+let firstLotSorting =  function() {
 
     let shortestWait = findShortestWait();
     let mostValue = findMostValuableLot();
 
 
     if(mostValue == true) {
+        increaseCount();
         displayWait();
         return true;
     } else {
         while(!mostValue.lotInUse) {
             shortestWait.currentLots.push(mostValue);
             for(let i = 0; i < allDepartments.length; i++) {
-            for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
-                for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
-                    for (let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
-                        if(mostValue.lotNum == allDepartments[i].workCenters[j].processes[k].lots[l].lotNum) {
-                            allDepartments[i].workCenters[j].processes[k].lots[l].lotInUse = true;
+                for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
+                    for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
+                        for (let l = 0; l < allDepartments[i].workCenters[j].processes[k].lots.length; l++) {
+                            if(mostValue.lotNum == allDepartments[i].workCenters[j].processes[k].lots[l].lotNum) {
+                                allDepartments[i].workCenters[j].processes[k].lots[l].lotInUse = true;
+                            }
                         }
                     }
                 }
             }
-        }
-        lotSorting();
+        firstLotSorting();
         }
     }
-
-
 };
 
 
 $("#lot_sort").on('click', function() {
-    lotSorting();
+    firstLotSorting();
 });
 
-//Check the console for the array of Objects to search
+
+//Need to continue the lot sort
+
 
 </script>
 
