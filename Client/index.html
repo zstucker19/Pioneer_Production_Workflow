@@ -264,7 +264,7 @@ let whichDepartment = function() {
 
 //Use Lots Constructor to Generate 10000 Dummy Data Lots
 let generateLots = function() {
-    for(let i = 0; i <= 1000; i++) {
+    for(let i = 0; i <= 5000; i++) {
         allLots.push(new Lot(i));
         allLots[0].processesNeeded.push(i);
     }
@@ -1085,24 +1085,31 @@ let findMostValuableLot = function() {
 };
 
 //Increase Count
+let finished = false;
 let increaseCount = function() {
-    for(let i = 0; i < allDepartments.length; i++) {
+ if(!finished) {
+    for(let i = 0; i < 1; i++) {
         for(let j = 0; j < allDepartments[i].workCenters.length; j++) {
             for(let k = 0; k < allDepartments[i].workCenters[j].processes.length; k++) {
-                if(allDepartments[i].workCenters[j].processes[k].currentLots.length > 0) {
+                if(allDepartments[i].workCenters[j].processes[k].currentWait() === 0) { 
+                    finished = true; 
+                    } else if(!finished){
                     count += (allDepartments[i].workCenters[j].processes[k].currentLots[0].quantity * allDepartments[i].workCenters[j].processes[k].avgTime);
+                    console.log('first condition');
                     //Needs work here
                     let index = allDepartments[i].workCenters[j].processes[k].lots.indexOf(allDepartments[i].workCenters[j].processes[k].currentLots[0]);
                     if(index >= 0) {
+                        console.log('second condition');
                         allDepartments[i].workCenters[j].processes[k].lots[index].lotInUse = false;
-                        console.log(allDepartments[i].workCenters[j].processes[k].lots.length);
                         allDepartments[i].workCenters[j].processes[k].lots.splice(index, 1);
-                        console.log(allDepartments[i].workCenters[j].processes[k].lots.length);
+                        allDepartments[i].workCenters[j].processes[k].currentLots.splice(0, 1);
+                        setTimeout(function() {
+                            firstLotSorting();
+                        }, 5000);
+                    }
                     } else {
                         return true;
-                    }
-                } else {
-                    continue;
+                    } 
                 }
             }
         }
